@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { PreconditionsFailedError } from '../errors';
 import { branchMove } from '../git/branch_move';
 import { commit, TCommitOpts } from '../git/commit';
@@ -227,6 +228,11 @@ export function composeMetaCache({
     }
   };
   const setParent = (branchName: string, parentBranchName: string) => {
+    if (branchName === parentBranchName) {
+      throw new PreconditionsFailedError(
+        `Cannot set parent of ${chalk.yellow(branchName)} to itself!`
+      );
+    }
     const cachedMeta = cache.branches[branchName];
     assertCachedMetaIsValidAndNotTrunk(cachedMeta);
 
@@ -408,6 +414,11 @@ export function composeMetaCache({
     },
     isDescendantOf: isDescendantOf,
     trackBranch: (branchName: string, parentBranchName: string) => {
+      if (branchName === parentBranchName) {
+        throw new PreconditionsFailedError(
+          `Cannot set parent of ${chalk.yellow(branchName)} to itself!`
+        );
+      }
       assertBranch(branchName);
       assertBranch(parentBranchName);
       assertCachedMetaIsValidOrTrunk(cache.branches[parentBranchName]);
@@ -518,6 +529,13 @@ export function composeMetaCache({
     },
     checkoutNewBranch: (branchName: string) => {
       const parentBranchName = cache.currentBranch;
+      if (branchName === parentBranchName) {
+        // This one probably will never happen because git will prevent it
+        // but you can never be too safe!
+        throw new PreconditionsFailedError(
+          `Cannot set parent of ${chalk.yellow(branchName)} to itself!`
+        );
+      }
       assertBranch(parentBranchName);
       const parentCachedMeta = cache.branches[parentBranchName];
       assertCachedMetaIsValidOrTrunk(parentCachedMeta);
@@ -774,6 +792,11 @@ export function composeMetaCache({
       branchName: string,
       parentBranchName: string
     ) => {
+      if (branchName === parentBranchName) {
+        throw new PreconditionsFailedError(
+          `Cannot set parent of ${chalk.yellow(branchName)} to itself!`
+        );
+      }
       assertBranch(parentBranchName);
       const { head, base } = { head: readFetchHead(), base: readFetchBase() };
       forceCreateBranch(branchName, head);
